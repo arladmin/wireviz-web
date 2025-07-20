@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir wireviz==0.4.1 wireviz-web gunicorn
 
 WORKDIR /app
 EXPOSE 8000
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "wireviz_web.app:create_app()"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "wireviz_web:create_app()"]
