@@ -1,27 +1,13 @@
-FROM python:3-slim
+FROM python:3.11-slim
 
-ARG BUILD_ENV
+# 5 MB of headers so pygraphviz builds instantly
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+        graphviz libgraphviz-dev build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV BUILD_ENV=${BUILD_ENV}
+# single pip line = clearer logs
+RUN pip install --no-cache-dir wireviz==0.4.1 wireviz-web gunicorn
 
-RUN apt update && \ 
-	apt install -y python3 graphviz
-	
-RUN pip install poetry
-
-WORKDIR /usr/src/app
-
-COPY poetry.lock pyproject.toml ./
-
-RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi --only main
-
-# TODO move this after poetry install but then pyprojet.toml packages entry cannot find wireviz_web
-COPY . .
-  
-ENV FLASK_APP=wireviz_web
-
-EXPOSE 3005
-
-ENTRYPOINT ["python","-c","import wireviz_web.cli; wireviz_web.cli.run()"]
-CMD ["--listen","0.0.0.0:3005"]
+WORKDIR /app
+EXPOSE 8000
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "wireviz_web.app:create_app()"]
