@@ -1,13 +1,14 @@
 FROM python:3.11-slim
 
-# 5 MB of headers so pygraphviz builds instantly
-RUN apt-get update -qq && apt-get install -y --no-install-recommends \
-        graphviz libgraphviz-dev build-essential && \
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends graphviz libgraphviz-dev build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-# single pip line = clearer logs
+WORKDIR /usr/src/app
+COPY . .
+
 RUN pip install --no-cache-dir wireviz==0.4.1 wireviz-web gunicorn
 
-WORKDIR /app
-EXPOSE 8000
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "wireviz_web:create_app()"]
+ENV PORT=3005
+EXPOSE 3005
+CMD ["gunicorn", "-b", "0.0.0.0:3005", "wireviz_web:create_app()"]
